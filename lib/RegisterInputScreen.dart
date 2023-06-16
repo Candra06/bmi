@@ -1,5 +1,7 @@
 import 'package:bmi_score/Config/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class RegisterInputScreen extends StatefulWidget {
   const RegisterInputScreen({Key? key}) : super(key: key);
@@ -13,22 +15,43 @@ class _RegisternInputScreenState extends State<RegisterInputScreen> {
       passwordController = TextEditingController();
   String errUsername = '', errPass = '';
   bool obsecure = true;
-  onSubmit() {
+  onSubmit() async {
     setState(() {
       errUsername = '';
       errPass = '';
     });
-    if (usernameController.text.isEmpty) {
-      errUsername = 'Username Tidak boleh kosong';
-    } else if (passwordController.text.isEmpty) {
-      errPass = 'Password Tidak boleh kosong';
-    } else {
-      Navigator.pushNamed(context, '/login', arguments: {
-        "username": usernameController.text,
-        "password": passwordController.text,
-      });
-    }
+    // if (usernameController.text.isEmpty) {
+    //   errUsername = 'Username Tidak boleh kosong';
+    // } else if (passwordController.text.isEmpty) {
+    //   errPass = 'Password Tidak boleh kosong';
+    // } else {
+    //   Navigator.pushNamed(context, '/login', arguments: {
+    //     "username": usernameController.text,
+    //     "password": passwordController.text,
+    //   });
+    // }
+
+    Navigator.pushNamed(context, '/home', arguments: {
+      "username": usernameController.text,
+      "password": passwordController.text,
+    });
     setState(() {});
+  }
+
+  cekPermission() async {
+    var locationStatus = await Permission.location.status;
+    var status = await Permission.locationWhenInUse.status;
+    if (status.isDenied || locationStatus.isDenied) {
+      if (await Permission.locationWhenInUse.request().isGranted) {
+        // goToHomeScreen();
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    cekPermission();
+    super.initState();
   }
 
   @override

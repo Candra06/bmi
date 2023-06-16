@@ -1,3 +1,4 @@
+import 'package:bmi_score/Config/Service.dart';
 import 'package:bmi_score/Config/themes.dart';
 import 'package:flutter/material.dart';
 
@@ -13,34 +14,65 @@ class HomeInputScreen extends StatefulWidget {
 }
 
 class _HomeInputScreenState extends State<HomeInputScreen> {
-  String kategori = '-', errCount = '';
+  String kategori = '-', errCount = '', temp = '';
+  bool isLoading = true;
   double bmi = 0;
   TextEditingController heightController = TextEditingController(),
       weightController = TextEditingController();
+  Map<String, dynamic> data = {};
+
+  getData(
+    bool isCurrentCity,
+    String cityName,
+  ) async {
+    setState(() {
+      isLoading = true;
+    });
+    var tmpData = await Services().callWeatherAPi(isCurrentCity, cityName);
+
+    setState(() {
+      data = tmpData;
+      double tmpTemp = double.parse(data['main']['temp'].toString()) - 273;
+      temp = tmpTemp.toInt().toString();
+      isLoading = false;
+    });
+  }
 
   onSubmit() {
     setState(() {
       errCount = '';
     });
-    if (heightController.text.isEmpty || weightController.text.isEmpty) {
-      errCount = 'Tinggi badan dan berat badan harus diisi';
-    } else {
-      double tmpHeight = int.parse(heightController.text.toString()) / 100;
-      bmi =
-          int.parse(weightController.text.toString()) / (tmpHeight * tmpHeight);
-      if (bmi < 17) {
-        kategori = 'Kurus(Kekurangan berat badan berat)';
-      } else if (bmi >= 17 && bmi < 18.4) {
-        kategori = 'Kurus(Kekurangan berat badan ringan)';
-      } else if (bmi >= 18.4 && bmi <= 25) {
-        kategori = 'Normal';
-      } else if (bmi > 25 && bmi <= 27) {
-        kategori = 'Gemuk(Lelebihan berat badan ringan)';
-      } else {
-        kategori = 'Obesitas';
-      }
-    }
+    // if (heightController.text.isEmpty || weightController.text.isEmpty) {
+    //   errCount = 'Tinggi badan dan berat badan harus diisi';
+    // } else {
+    //   double tmpHeight = int.parse(heightController.text.toString()) / 100;
+    //   bmi =
+    //       int.parse(weightController.text.toString()) / (tmpHeight * tmpHeight);
+    //   if (bmi < 17) {
+    //     kategori = 'Kurus(Kekurangan berat badan berat)';
+    //   } else if (bmi >= 17 && bmi < 18.4) {
+    //     kategori = 'Kurus(Kekurangan berat badan ringan)';
+    //   } else if (bmi >= 18.4 && bmi <= 25) {
+    //     kategori = 'Normal';
+    //   } else if (bmi > 25 && bmi <= 27) {
+    //     kategori = 'Gemuk(Lelebihan berat badan ringan)';
+    //   } else {
+    //     kategori = 'Obesitas';
+    //   }
+    // }
+    getData(true, "Jember");
     setState(() {});
+  }
+
+  @override
+  void initState() {
+    Future.delayed(
+      Duration.zero,
+      () {
+        getData(true, "");
+      },
+    );
+    super.initState();
   }
 
   @override
@@ -103,138 +135,36 @@ class _HomeInputScreenState extends State<HomeInputScreen> {
                   Center(
                     child: Padding(
                       padding: EdgeInsets.all(defaultMargin),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Skor BMI kamu :',
-                            style: TextStyle(
-                              color: whiteColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          Text(
-                            bmi.toStringAsFixed(2),
-                            style: TextStyle(
-                              color: whiteColor,
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Kategori : $kategori',
-                            style: TextStyle(
-                              color: whiteColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(
-                      top: 72,
-                      left: defaultMargin,
-                      right: defaultMargin,
-                    ),
-                    padding: EdgeInsets.all(defaultMargin),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.grey,
-                      ),
-                    ),
-                    height: 260,
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.only(
-                            top: defaultMargin,
-                          ),
-                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: borderInput,
-                              )),
-                          child: TextFormField(
-                            style: TextStyle(color: fontPrimaryColor),
-                            keyboardType: TextInputType.number,
-                            controller: heightController,
-                            decoration: InputDecoration(
-                              alignLabelWithHint: true,
-                              fillColor: fontPrimaryColor,
-                              hintText: 'TInggi badan',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                        // errUsername.isNotEmpty
-                        //     ? Text(
-                        //         errUsername,
-                        //         style: TextStyle(color: redColor),
-                        //       )
-                        //     : const SizedBox(),
-                        Container(
-                          margin: EdgeInsets.only(
-                            top: defaultMargin,
-                          ),
-                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: borderInput,
-                              )),
-                          child: TextFormField(
-                            style: TextStyle(color: fontPrimaryColor),
-                            keyboardType: TextInputType.number,
-                            controller: weightController,
-                            decoration: InputDecoration(
-                              alignLabelWithHint: true,
-                              fillColor: fontPrimaryColor,
-                              hintText: 'Berat Badan',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-
-                        errCount.isNotEmpty
-                            ? Padding(
-                                padding: EdgeInsets.only(top: defaultMargin),
-                                child: Text(
-                                  errCount,
-                                  style: TextStyle(color: redColor),
+                      child: isLoading
+                          ? const CircularProgressIndicator()
+                          : Column(
+                              children: [
+                                Text(
+                                  'Cuaca Hari Ini',
+                                  style: TextStyle(
+                                    color: whiteColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
-                              )
-                            : const SizedBox(),
-                        Container(
-                          margin: EdgeInsets.only(
-                            top: defaultMargin,
-                          ),
-                          width: MediaQuery.of(context).size.width,
-                          height: 45,
-                          child: ElevatedButton(
-                            onPressed: () => onSubmit(),
-                            child: Text(
-                              'HITUNG BMI',
-                              style: TextStyle(
-                                color: whiteColor,
-                                fontSize: defaultMargin,
-                              ),
+                                Text(
+                                  "${data['weather'][0]['main']} (${temp.toString()}ºC)",
+                                  style: TextStyle(
+                                    color: whiteColor,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  ' ${data['weather'][0]['description']}',
+                                  style: TextStyle(
+                                    color: whiteColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
                             ),
-                            style: ElevatedButton.styleFrom(
-                              splashFactory: null,
-                              primary: primaryColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    defaultBorderRadius - 2),
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
                     ),
                   ),
                 ],
